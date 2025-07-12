@@ -1,0 +1,39 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: container_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - sys_net
+    volumes:
+      - /redis:/redis
+    restart: unless-stopped
+
+  imgg:
+    build:
+      context: ./imgg
+    ports:
+      - "1374:1374"
+    networks:
+      - sys_net
+    container_name: container_imgg
+    environment:
+      - IMGG_IP=0.0.0.0
+      - IMGG_PORT=1374
+      - REDIS_PORT=6379
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./imgg:/usr/src/app
+      - ./utils:/usr/src/app/utils    
+      - ../logs:/usr/src/app/logs
+      - /models:/models
+      - /tmp:/tmp
+    depends_on:
+      - redis
+    restart: unless-stopped
+    
+networks:
+  sys_net:
+    name: sys_net
+    driver: bridge
