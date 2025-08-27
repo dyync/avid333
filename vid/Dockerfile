@@ -24,4 +24,6 @@ RUN pip install --no-cache-dir -r requirements.txt || \
 # Copy your application code
 COPY . .
 
-CMD ["python", "your_script.py"]
+EXPOSE 1375
+
+CMD ["python", "app.py"]
