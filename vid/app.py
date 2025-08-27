@@ -6,10 +6,23 @@ from fastapi.responses import JSONResponse, FileResponse
 from datetime import datetime
 import os
 from diffusers import StableVideoDiffusionPipeline
-from diffusers.utils import export_to_video
 from PIL import Image
 import torch
 import logging
+import numpy as np
+
+# Alternative video export implementation
+try:
+    from diffusers.utils import export_to_video
+    HAS_OPENCV = True
+except ImportError:
+    HAS_OPENCV = False
+    try:
+        import imageio
+        HAS_IMAGEIO = True
+    except ImportError:
+        HAS_IMAGEIO = False
+        print("Warning: Neither OpenCV nor imageio are available for video export")
 
 LOG_PATH = './logs'
 LOGFILE_CONTAINER = f'{LOG_PATH}/logfile_container_video.log'
@@ -37,6 +50,29 @@ def load_pipeline(model_id, device, torch_dtype, variant):
         print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] [START] [load_pipeline] [error] Failed to load pipeline: {e}')
         raise
 
+def export_frames_to_video(frames, output_path, fps=10):
+    """Export frames to video using available libraries"""
+    if HAS_OPENCV:
+        # Use the original OpenCV implementation
+        from diffusers.utils import export_to_video
+        export_to_video(frames, output_path, fps=fps)
+    elif HAS_IMAGEIO:
+        # Use imageio as fallback
+        print(f"Using imageio to export video to {output_path}")
+        # Convert frames to uint8 if needed
+        if isinstance(frames[0], torch.Tensor):
+            frames = [frame.cpu().numpy() for frame in frames]
+        if frames[0].dtype != np.uint8:
+            frames = [(frame * 255).astype(np.uint8) for frame in frames]
+        
+        # Write video using imageio
+        with imageio.get_writer(output_path, fps=fps) as writer:
+            for frame in frames:
+                writer.append_data(frame)
+    else:
+        raise ImportError("Neither OpenCV nor imageio are available. Please install one of them:\n"
+                         "pip install opencv-python\nor\npip install imageio")
+
 def generate_video(model_id, input_image_path, device, torch_dtype, variant, 
                   decode_chunk_size=8, motion_bucket_id=180, noise_aug_strength=0.1,
                   output_path="output_svd.mp4", fps=10):
@@ -60,7 +96,7 @@ def generate_video(model_id, input_image_path, device, torch_dtype, variant,
         ).frames[0]
         
         # Export to video file
-        export_to_video(frames, output_path, fps=fps)
+        export_frames_to_video(frames, output_path, fps=fps)
         
         processing_time = time.time() - start_time
         print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] [generate_video] finished generating video! Saved to {output_path} in {processing_time:.2f}s')

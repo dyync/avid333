@@ -13,3 +13,6 @@ accelerate
 safetensors
 gitpython
 pynvml
+opencv-python
+imageio
+imageio-ffmpeg
