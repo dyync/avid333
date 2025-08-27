@@ -142,4 +142,4 @@ async def generate(request: Request):
         return JSONResponse({"result_status": 500, "result_data": str(e)})
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=f'{os.getenv("VIDG_IP")}', port=int(os.getenv("VIDG_PORT")))
+    uvicorn.run(app, host=f'{os.getenv("VID_IP")}', port=int(os.getenv("VID_PORT")))

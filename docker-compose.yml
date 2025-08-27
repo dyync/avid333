@@ -19,8 +19,8 @@ services:
       - sys_net
     container_name: container_vid
     environment:
-      - vid_IP=0.0.0.0
-      - vid_PORT=1375
+      - VID_IP=0.0.0.0
+      - VID_PORT=1375
       - REDIS_PORT=6379
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
