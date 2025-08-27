@@ -29,6 +29,7 @@ services:
       - ../logs:/usr/src/app/logs
       - /models:/models
       - /tmp:/tmp
+    runtime: nvidia
     depends_on:
       - redis
     restart: unless-stopped
