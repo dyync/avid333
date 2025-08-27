@@ -10,21 +10,21 @@ services:
       - /redis:/redis
     restart: unless-stopped
 
-  imgg:
+  vid:
     build:
-      context: ./imgg
+      context: ./vid
     ports:
-      - "1374:1374"
+      - "1375:1375"
     networks:
       - sys_net
-    container_name: container_imgg
+    container_name: container_vid
     environment:
-      - IMGG_IP=0.0.0.0
-      - IMGG_PORT=1374
+      - vid_IP=0.0.0.0
+      - vid_PORT=1375
       - REDIS_PORT=6379
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
-      - ./imgg:/usr/src/app
+      - ./vid:/usr/src/app
       - ./utils:/usr/src/app/utils    
       - ../logs:/usr/src/app/logs
       - /models:/models
